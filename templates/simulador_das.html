@@ -18,17 +18,42 @@
 
       <div class="grid">
         <div class="card" id="left-card">
-          <div class="label"><i data-lucide="layers"></i> Qual anexo?</div>
+          <div class="label">
+  <i data-lucide="layers"></i> Qual anexo?
+  <span class="info-tooltip" data-text="Define a atividade da empresa. Ex: Comércio (Anexo I), Indústria (Anexo II) ou Serviços (Anexos III, IV ou V).">
+    <i data-lucide="circle-help" width="15" height="15"></i>
+  </span>
+</div>
           <select id="anexo">
-            <option value="">-- selecione --</option>
-            <option>Anexo I - Comércio</option>
-            <option>Anexo II - Indústria</option>
-            <option>Anexo III - Serviço</option>
-            <option>Anexo IV - Serviço</option>
-            <option>Anexo V - Serviço</option>
-          </select>
+  <option value="">-- selecione --</option>
+  
+  <option value="Anexo I - Comércio">
+    Anexo I - Comércio (Lojas, Varejo, E-commerce...)
+  </option>
+  
+  <option value="Anexo II - Indústria">
+    Anexo II - Indústria (Fábricas, Produção...)
+  </option>
+  
+  <option value="Anexo III - Serviço">
+    Anexo III - Serviços (Manutenção, Instalação, Apoio Adm, Aulas...)
+  </option>
+  
+  <option value="Anexo IV - Serviço">
+    Anexo IV - Serviços (Advocacia, Limpeza, Obras, Vigilância...)
+  </option>
+  
+  <option value="Anexo V - Serviço">
+    Anexo V - Serviços Intelectuais (Engenharia, Publicidade, Tech...)
+  </option>
+</select>
 
-          <div class="label" style="margin-top:6px"><i data-lucide="activity"></i> Você sabe o RBT da sua PJ?</div>
+          <div class="label" style="margin-top:6px">
+  <i data-lucide="activity"></i> Você sabe o RBT12 da sua PJ?
+  <span class="info-tooltip" data-text="RBT12 é a soma do faturamento dos últimos 12 meses. Esse valor define a alíquota do imposto.">
+    <i data-lucide="circle-help" width="15" height="15"></i>
+  </span>
+</div>
           <select id="rbt-conhece">
             <option value="">-- selecione --</option>
             <option>Sim</option>
@@ -39,7 +64,12 @@
         </div>
 
         <div class="card content-right">
-          <div class="label"><i data-lucide="file-text"></i> Faturamento para cálculo</div>
+          <div class="label">
+  <i data-lucide="file-text"></i> Faturamento para cálculo
+  <span class="info-tooltip" data-text="Preencha com o total de notas fiscais emitidas no mês de competência (o mês que você está calculando).">
+    <i data-lucide="circle-help" width="15" height="15"></i>
+  </span>
+</div>
           <input id="faturamento" class="currency" placeholder="R$ 0,00" />
 
           <div class="label" style="margin-top:8px"><i data-lucide="globe"></i> É exportação de serviços?</div>
@@ -106,32 +136,59 @@
   rbtConheceSelect.addEventListener('change', () => {
     rbtDynamicArea.innerHTML = '';
     errorsDiv.textContent = '';
+    
+    // --- OPÇÃO: SIM (Já sabe o RBT) ---
     if (rbtConheceSelect.value === 'Sim') {
-      const label = document.createElement('div'); label.className = 'label';
-      label.innerHTML = '<i data-lucide="coins"></i> Informe o RBT';
+      const label = document.createElement('div'); 
+      label.className = 'label';
+      
+      // INSERI O TOOLTIP AQUI
+      label.innerHTML = `
+        <i data-lucide="coins"></i> Informe o RBT12
+        <span class="info-tooltip" data-text="Insira a soma exata do faturamento bruto dos últimos 12 meses anteriores ao período de apuração.">
+          <i data-lucide="circle-help" width="15" height="15"></i>
+        </span>
+      `;
+      
       rbtDynamicArea.appendChild(label);
       rbtDynamicArea.appendChild(rbtInput);
-      lucide.createIcons();
+      lucide.createIcons(); // Renderiza o ícone de ajuda
+
+    // --- OPÇÃO: NÃO (Não sabe o RBT) ---
     } else if (rbtConheceSelect.value === 'Não') {
       const block = document.createElement('div');
       block.className = 'dynamic-block';
+      
       const label = document.createElement('div');
       label.className = 'label';
-      label.innerHTML = '<i data-lucide="calendar"></i> Data de abertura da PJ';
+      
+      // INSERI O TOOLTIP AQUI
+      label.innerHTML = `
+        <i data-lucide="calendar"></i> Data de abertura da PJ
+        <span class="info-tooltip" data-text="Necessário para estimar o seu RBT proporcional caso a empresa tenha menos de 1 ano.">
+          <i data-lucide="circle-help" width="15" height="15"></i>
+        </span>
+      `;
+      
       const inputDate = document.createElement('input');
       inputDate.type = 'date';
       const hoje = new Date();
       inputDate.max = hoje.toISOString().split('T')[0];
+      
       const hint = document.createElement('div');
       hint.className = 'hint';
       hint.textContent = 'Se ainda não tem PJ aberta, coloque a data de hoje.';
+      
       const btn = document.createElement('button');
       btn.textContent = 'Confirmar data';
+      btn.style.marginTop = '8px'; // Ajuste visual pequeno
+      
       const monthsArea = document.createElement('div');
       monthsArea.style.marginTop = '10px';
+      
       block.append(label, inputDate, btn, hint, monthsArea);
       rbtDynamicArea.appendChild(block);
-      lucide.createIcons();
+      lucide.createIcons(); // Renderiza o ícone de ajuda
 
       btn.addEventListener('click', () => {
         monthsArea.innerHTML = '';
@@ -143,26 +200,29 @@
         if (!inputDate.value) {
           hint.textContent = 'Informe a data de abertura.';
           hint.classList.add('error-msg');
-          inputDate.classList.add('campo-erro'); // 🔴 borda vermelha
+          inputDate.classList.add('campo-erro');
           return;
         }
         if (inputDate.value > inputDate.max) {
           hint.textContent = 'Datas futuras não são permitidas.';
           hint.classList.add('error-msg');
-          inputDate.classList.add('campo-erro'); // 🔴 borda vermelha
+          inputDate.classList.add('campo-erro');
           return;
         }
         hint.style.display = 'none';
+        
         const [ano, mes, dia] = inputDate.value.split('-').map(Number);
         const abertura = new Date(ano, mes - 1, dia);
         const info = computeMonthsAndStart(abertura);
-        const meses = info.months; const startDate = info.startDate;
+        const meses = info.months; 
+        const startDate = info.startDate;
         const hojeDate = new Date();
+        
         const grid = document.createElement('div');
         grid.className = 'months-grid';
         const inputs = [];
 
-        // cria tabela de 2 colunas, até 6 linhas
+        // cria tabela de 2 colunas
         const table = document.createElement('table');
         table.className = 'month-table';
 
@@ -201,7 +261,7 @@
         // adiciona tabela no grid
         grid.appendChild(table);
         monthsArea.appendChild(grid);
-        lucide.createIcons();
+        lucide.createIcons(); // Importante para ícones dentro da área dinâmica, se houver
 
         function tryAutoCalculate() {
           if (inputs.length === 0) {
@@ -215,14 +275,18 @@
           const rbtCalc = media * 12;
           rbtInput.setNumericValue(rbtCalc);
         }
+        
         inputs.forEach(i => {
           i.addEventListener('blur', tryAutoCalculate);
           i.addEventListener('input', tryAutoCalculate);
           i.addEventListener('paste', () => setTimeout(tryAutoCalculate, 50));
         });
+        
         tryAutoCalculate();
       });
-    } else { rbtDynamicArea.innerHTML = ''; }
+    } else { 
+      rbtDynamicArea.innerHTML = ''; 
+    }
   });
 
   attachCurrencyBehaviorSmart(faturamentoInput);
@@ -410,25 +474,21 @@
     const isentoKeys = ['COFINS', 'PIS/Pasep', 'ISS'];
     let rateioLinesHTML = '';
     
-    // Itera diretamente sobre as chaves (nomes dos impostos) do objeto 'rateio' retornado.
-    // Isso garante que a chave correta (ICMS, IPI ou ISS) seja usada.
     for (const impostoKey in r) {
         if (r.hasOwnProperty(impostoKey)) {
             const valorTributo = r[impostoKey];
             
-            // Verifica a condição de "Isento" (só para os impostos de serviço PIS/COFINS/ISS, quando isExportacao é true)
+            // Verifica a condição de "Isento"
             const isIsento = isExportacao && isentoKeys.includes(impostoKey);
             
             if (isIsento) {
-                // Exibe "Isento"
                 rateioLinesHTML += `<div><strong>${impostoKey}:</strong> Isento</div>`;
             } else {
-                // Se não for "Isento", calcula e mostra os valores R$ e %
-                const percent = (totalDAS > 0) ? (valorTributo / totalDAS) * 100 : 0;
+                // Formata o valor para R$
                 const valorStr = valorTributo.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-                const percentStr = percent.toFixed(2); // ex: 36.31%
 
-                rateioLinesHTML += `<div><strong>${impostoKey}:</strong> R$ ${valorStr} (${percentStr}%)</div>`;
+                // --- ALTERAÇÃO AQUI: Removi o cálculo da % e a exibição dela ---
+                rateioLinesHTML += `<div><strong>${impostoKey}:</strong> R$ ${valorStr}</div>`;
             }
         }
     }

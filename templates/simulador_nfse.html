@@ -17,7 +17,12 @@
 
         <div class="grid-2-cols">
           <div class="card">
-            <label class="label">Valor Líquido desejado (R$)</label>
+            <label class="label">
+              Valor Líquido desejado (R$)
+              <span class="info-tooltip" data-text="O valor exato que você quer receber na sua conta bancária após descontar todos os impostos.">
+                <i data-lucide="circle-help" width="15" height="15"></i>
+              </span>
+            </label>
             <div class="currency-wrapper">
               <input id="valor_liquido" type="text" class="currency-input currency" placeholder="R$ 0,00">
             </div>
@@ -25,7 +30,12 @@
           </div>
 
           <div class="card">
-            <label class="label">Alíquota atual do seu Imposto Total (%)</label>
+            <label class="label">
+              Alíquota atual do seu Imposto Total (%)
+              <span class="info-tooltip" data-text="A porcentagem total de imposto que incide sobre sua nota (ex: sua alíquota efetiva do Simples Nacional ou 16.33% do Lucro Presumido).">
+                <i data-lucide="circle-help" width="15" height="15"></i>
+              </span>
+            </label>
             <div class="percent-wrapper">
               <input id="imposto_principal" type="number" step="0.01" placeholder="0,00">
             </div>
@@ -34,7 +44,12 @@
         </div>
         
         <div class="card">
-          <label class="label">Custos adicionais</label>
+          <label class="label">
+            Custos adicionais
+            <span class="info-tooltip" data-text="Adicione despesas extras que devem ser cobradas do cliente e embutidas na nota (ex: taxa de boleto, deslocamento, licenças de software).">
+              <i data-lucide="circle-help" width="15" height="15"></i>
+            </span>
+          </label>
           <div id="custos_area"></div>
           <button onclick="adicionarCusto()">Adicionar custo</button>
         </div>
@@ -49,7 +64,7 @@
 
 <script>
 // ====================================================================
-// FUNÇÕES DE MÁSCARA E DESMASCARAMENTO COPIADAS DIRETAMENTE DE simulador_das.html
+// FUNÇÕES DE MÁSCARA E LÓGICA
 // ====================================================================
 
 function parseToNumber(s) {
@@ -59,7 +74,7 @@ function parseToNumber(s) {
     t = t.replace(/\s/g, '').replace(/R\$/gi, '');
     const comma = t.indexOf(',');
     const dot = t.indexOf('.');
-    // A LÓGICA ABAIXO É CRUCIAL PARA CONVERTER O FORMATO BRASILEIRO
+    
     if (dot !== -1 && comma !== -1) t = t.replace(/\./g, '').replace(',', '.');
     else if (comma !== -1 && dot === -1) t = t.replace(',', '.');
     t = t.replace(/[^0-9\.\-]/g, '');
@@ -68,20 +83,16 @@ function parseToNumber(s) {
 }
 
 function attachCurrencyBehaviorSmart(inp) {
-    // A LÓGICA DE INPUT É O QUE FORÇA A MÁSCARA REVERSA (DIVIDIR POR 100)
     inp.addEventListener('input', () => {
-        let val = inp.value.replace(/[^\d]/g, ''); // Remove tudo que não for dígito
+        let val = inp.value.replace(/[^\d]/g, ''); 
         if (val === '') { inp.dataset.value = ''; inp.value = ''; return; }
-        let num = parseFloat(val) / 100; // Divide por 100 para simular centavos
+        let num = parseFloat(val) / 100; 
         inp.dataset.value = num;
         inp.value = num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     });
     
-    // As outras funções garantem o comportamento de foco e colagem
     inp.addEventListener('focus', () => {
-        // Se não tiver valor, limpa o campo ao focar para começar a digitar
         if (!inp.dataset.value) inp.value = ''; 
-        // Se tiver valor, mantém o valor formatado ao focar (opcional, mas mantido da fonte)
     });
     inp.addEventListener('paste', (ev) => {
         ev.preventDefault();
@@ -93,7 +104,6 @@ function attachCurrencyBehaviorSmart(inp) {
         }
     });
     
-    // Métodos para obtenção e definição de valor numérico
     inp.getNumericValue = () => inp.dataset.value ? parseFloat(inp.dataset.value) : null;
     inp.setNumericValue = (num) => {
         inp.dataset.value = num;
@@ -114,7 +124,7 @@ function limparErro(campo, msg) {
     msg.style.display = "none";
 }
 
-/* --- Adicionar blocos de custos (LÓGICA DINÂMICA) --- */
+/* --- Adicionar blocos de custos --- */
 function adicionarCusto() {
   const id = Date.now();
 
@@ -138,7 +148,7 @@ function adicionarCusto() {
     document.getElementById("custos_area").insertAdjacentHTML('beforeend', custoHtml);
 }
 
-/* --- Mostra/oculta o campo de valor e o formata (APLICA MÁSCARA CUSTOMIZADA) --- */
+/* --- Mostra/oculta o campo de valor --- */
 function toggleValorInput(id) {
     const tipoSelect = document.getElementById(`tipo_${id}`);
     const valorWrapper = document.getElementById(`wrapper_val_${id}`);
@@ -152,7 +162,6 @@ function toggleValorInput(id) {
         `;
         valorWrapper.style.display = "block";
         
-        // CHAMA A FUNÇÃO CUSTOMIZADA
         attachCurrencyBehaviorSmart(document.getElementById(`val_${id}`)); 
 
     } else if (tipo === "%") {
@@ -168,7 +177,7 @@ function toggleValorInput(id) {
     }
 }
 
-/* --- Função principal de cálculo (USANDO getNumericValue) --- */
+/* --- Função principal de cálculo --- */
 async function calcular() {
   const liquidoInput = document.getElementById("valor_liquido");
   const impostoInput = document.getElementById("imposto_principal");
@@ -179,7 +188,6 @@ async function calcular() {
   limparErro(liquidoInput, erroLiq);
   limparErro(impostoInput, erroImp);
 
-  // MUDANÇA CRUCIAL: USAR getNumericValue()
   const valor_liquido = liquidoInput.getNumericValue();
   const imposto_principal = parseFloat(impostoInput.value);
 
@@ -214,19 +222,15 @@ async function calcular() {
               let val;
               
               if (tipo === "R$") {
-                  // MUDANÇA CRUCIAL: USAR getNumericValue()
                   val = valInput.getNumericValue();
               } else {
                   val = parseFloat(valInput.value);
               }
 
               if (desc && val !== null && !isNaN(val)) {
-                  
-                  // APLICA O LIMITE DE 99.99%
                   if (tipo === "%" && val >= 100) {
                       val = 99.99; 
                   }
-                  
                   custos.push({ descricao: desc, valor: val, tipo });
               }
           }
@@ -236,44 +240,49 @@ async function calcular() {
 
   const payload = { valor_liquido, imposto_principal, custos };
 
-  const resp = await fetch("/calcular_valor_bruto", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
+  try {
+      const resp = await fetch("/calcular_valor_bruto", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
 
-// ... Código anterior ...
+      const dados = await resp.json();
 
-  const dados = await resp.json();
+      if (resp.status !== 200) {
+          alert("Erro ao calcular: " + (dados.erro || "Erro desconhecido"));
+          return;
+      }
+      
+      const formatarBRL = (valor) => {
+          return parseFloat(valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
 
-  if (resp.status !== 200) {
-      // ... Código de erro ...
-      return;
+      let html = `
+        <h3 style="color:var(--accent);">Resultado Calculado</h3>
+        <p style="font-size:1.1em;">O valor total da Nota Fiscal deve ser: <strong style="color:var(--accent); font-size:1.2em;">R$ ${formatarBRL(dados.valor_bruto)}</strong></p>
+        <div style="background:#f4f5fb; padding:10px; border-radius:8px; margin-top:10px;">
+            <p><strong>Valor Líquido (na sua conta):</strong> R$ ${formatarBRL(dados.liquido_final)}</p>
+            <hr style="border:0; border-top:1px solid #ddd; margin:10px 0;">
+            <strong>Detalhamento das Cobranças:</strong>
+      `;
+
+      dados.detalhes.forEach(d => {
+        html += `<div style="margin-top:4px;">• ${d.descricao}: R$ ${formatarBRL(d.valor)}</div>`;
+      });
+      
+      html += `</div>`;
+
+      document.getElementById("resultado").style.display = "block";
+      document.getElementById("resultado").innerHTML = html;
+      
+      // Renderiza ícones caso o HTML injetado tenha algum (opcional)
+      lucide.createIcons();
+
+  } catch (err) {
+      alert("Erro de conexão: " + err.message);
   }
-  
-  // --- BLOCO DE CÓDIGO CORRIGIDO ABAIXO ---
-  
-  // Função auxiliar para formatar números para o padrão BRL (123.456,78)
-  const formatarBRL = (valor) => {
-      // Garante 2 casas decimais e usa o localizador pt-BR para separadores
-      return parseFloat(valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  }
-
-  let html = `
-    <h3>Resultado</h3>
-    <p><strong>O valor da NFS-e dever ser: R$ ${formatarBRL(dados.valor_bruto)}</strong></p>
-    <p>Valor Líquido : R$ ${formatarBRL(dados.liquido_final)}</p>
-    <h4>Detalhamento:</h4>
-  `;
-
-  dados.detalhes.forEach(d => {
-    html += `<div>${d.descricao}: R$ ${formatarBRL(d.valor)}</div>`;
-  });
-
-  document.getElementById("resultado").style.display = "block";
-  document.getElementById("resultado").innerHTML = html;
 }
-// ...
 
 // Inicializa a máscara no campo estático ao carregar a página
 document.addEventListener('DOMContentLoaded', () => {
@@ -284,7 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   <footer>
     <div class="footer-left">
-      <span>Simulador NFS-e • v1.0 • Dev:: <strong>Edinaldo P.S.</strong></span>
+      <span>Simulador NFS-e • v1.0 • Dev: <strong>Edinaldo P.S.</strong></span>
       
       <a href="https://www.linkedin.com/in/edinaldo-pedro" target="_blank" class="footer-link" title="Ir para LinkedIn">
         <i data-lucide="linkedin" width="18" height="18" class="linkedin-icon"></i>
@@ -299,6 +308,6 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   </footer>
 
-
-
 <script>lucide.createIcons();</script>
+</body>
+</html>

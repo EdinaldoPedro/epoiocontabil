@@ -583,3 +583,268 @@ footer {
     gap: 8px;
   }
 }
+
+/* === TOOLTIPS (AJUDA VISUAL) === */
+.info-tooltip {
+  position: relative;
+  display: inline-flex;
+  margin-left: 8px; /* Espaço entre o texto e a ? */
+  cursor: help;
+  color: #999; /* Cor discreta padrão */
+  vertical-align: middle;
+  transition: color 0.2s ease;
+}
+
+.info-tooltip:hover {
+  color: var(--accent); /* Fica azul ao passar o mouse */
+}
+
+/* O Balão de Texto */
+.info-tooltip::after {
+  content: attr(data-text); /* Pega o texto do HTML */
+  visibility: hidden;
+  opacity: 0;
+  
+  /* Tamanho e Layout */
+  width: 240px;
+  background-color: var(--primary); /* Usa o azul escuro do tema */
+  color: #fff;
+  text-align: center;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-family: 'LT Energy', sans-serif;
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: normal;
+  
+  /* Posicionamento */
+  position: absolute;
+  z-index: 100;
+  bottom: 135%; /* Fica acima do ícone */
+  left: 50%;
+  transform: translateX(-50%) translateY(10px); /* Começa um pouco mais baixo p/ animação */
+  
+  /* Sombra suave */
+  box-shadow: 0 4px 12px rgba(27, 27, 57, 0.25);
+  pointer-events: none; /* Evita que o mouse trave no balão */
+  
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* A Seta (Triângulo) abaixo do balão */
+.info-tooltip::before {
+  content: "";
+  position: absolute;
+  visibility: hidden;
+  opacity: 0;
+  top: -5px; 
+  left: 50%;
+  margin-left: -6px;
+  
+  /* Desenha o triângulo via bordas */
+  border-width: 6px;
+  border-style: solid;
+  border-color: var(--primary) transparent transparent transparent;
+  
+  transition: all 0.3s ease;
+  transform: translateY(10px);
+}
+
+/* Estado Ativo (Hover) */
+.info-tooltip:hover::after,
+.info-tooltip:hover::before {
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(-50%) translateY(0); /* Animação de subida */
+}
+
+.info-tooltip:hover::before {
+  transform: translateY(0); /* Ajuste específico da seta */
+}
+
+/* Ajuste para mobile: evita que o tooltip saia da tela se estiver muito na borda */
+@media (max-width: 480px) {
+  .info-tooltip::after {
+    width: 200px;
+    left: -80px; /* Desloca um pouco para a esquerda */
+    transform: translateX(0) translateY(10px);
+  }
+  .info-tooltip:hover::after {
+    transform: translateX(0) translateY(0);
+  }
+  .info-tooltip::before {
+    left: 8px; /* Ajusta a seta */
+    margin-left: 0;
+  }
+}
+
+
+
+
+
+
+
+
+
+/* =========================================
+   ESTILOS DO HOLERITE E IMPRESSÃO (LIMPO)
+   ========================================= */
+
+/* =========================================
+   ESTILOS DO HOLERITE PROFISSIONAL
+   ========================================= */
+
+/* --- Visualização (Preview) --- */
+.holerite-preview {
+  background: #fff;
+  padding: 0; /* Padding controlado internamente */
+  font-family: 'Courier New', Courier, monospace; /* Fonte clássica de documento fiscal */
+  font-size: 12px;
+  max-width: 800px;
+  margin: 20px auto;
+  display: none;
+  color: #000;
+  
+  /* Borda Externa Grossa */
+  border: 2px solid #000;
+  box-sizing: border-box;
+}
+
+/* Área interna com padding */
+.hol-content {
+    padding: 20px;
+}
+
+/* --- Cabeçalho --- */
+.hol-header {
+  border-bottom: 2px solid #000;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.hol-header-top {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: flex-start;
+}
+
+.hol-header-bottom {
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* --- Tabela de Itens --- */
+.hol-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  font-size: 11px;
+}
+
+.hol-table th {
+  border-top: 1px solid #000;
+  border-bottom: 1px solid #000;
+  background-color: #f0f0f0;
+  font-weight: bold;
+  text-transform: uppercase;
+  padding: 5px;
+  text-align: left;
+}
+
+.hol-table td {
+  padding: 4px 5px;
+  border-bottom: 1px dotted #ccc; /* Linha pontilhada sutil entre itens */
+}
+/* Remove bordas laterais para visual mais limpo */
+.hol-table th:first-child, .hol-table td:first-child { padding-left: 5px; }
+.hol-table th:last-child, .hol-table td:last-child { padding-right: 5px; }
+
+/* --- Rodapé e Totais --- */
+.hol-footer {
+  border-top: 2px solid #000;
+  padding-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.box-bases {
+    border: 1px solid #000;
+    padding: 5px;
+    font-size: 10px;
+    width: 60%;
+}
+
+.box-totais {
+    width: 35%;
+    font-size: 11px;
+}
+
+.linha-total {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+.box-liquido {
+    background: #e6e6e6;
+    border: 1px solid #000;
+    padding: 8px;
+    margin-top: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+}
+
+/* Assinatura */
+.area-assinatura {
+    margin-top: 40px;
+    text-align: center;
+    font-size: 10px;
+}
+.linha-assinatura {
+    border-top: 1px solid #000;
+    width: 60%;
+    margin: 0 auto 5px auto;
+}
+
+/* --- Impressão --- */
+@media print {
+  body * { visibility: hidden; }
+  
+  /* Esconde interfaces */
+  header, footer, #print-controls, .action-right, .card, #input-area, .wrap > h1 {
+    display: none !important;
+  }
+
+  /* Modo Padrão */
+  body.print-mode-padrao #holerite-area, 
+  body.print-mode-padrao #holerite-area * {
+    visibility: visible;
+  }
+  body.print-mode-padrao #holerite-area {
+    position: absolute; left: 0; top: 0; width: 100%; 
+    display: block !important; border: 2px solid #000; margin: 0;
+  }
+
+  /* Modo 2 Vias */
+  body.print-mode-duplo #holerite-2vias-container,
+  body.print-mode-duplo #holerite-2vias-container * {
+    visibility: visible;
+  }
+  body.print-mode-duplo #holerite-2vias-container {
+    position: absolute; left: 0; top: 0; width: 100%; display: block !important;
+  }
+  
+  body.print-mode-duplo .holerite-preview {
+    border: 1px solid #000; /* Borda um pouco mais fina para 2 vias */
+    margin-bottom: 20px; 
+    font-size: 10px; /* Fonte levemente menor para caber */
+    page-break-inside: avoid;
+  }
+  
+  /* Ajuste padding na impressão */
+  .hol-content { padding: 15px; }
+}

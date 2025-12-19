@@ -18,18 +18,31 @@
       </div>
 
       <div class="grid">
-        <!-- CARD ESQUERDA -->
         <div class="card">
-          <div class="label"><i data-lucide="dollar-sign"></i> Valor da NFS-e</div>
+          <div class="label">
+            <i data-lucide="dollar-sign"></i> Valor da NFS-e
+            <span class="info-tooltip" data-text="Informe o valor bruto da nota fiscal de serviço que você está emitindo ou deseja simular.">
+              <i data-lucide="circle-help" width="15" height="15"></i>
+            </span>
+          </div>
           <input id="valor_nfse" class="currency" placeholder="R$ 0,00">
 
-          <div class="label" style="margin-top:6px"><i data-lucide="bar-chart"></i> Faturamento Mensal</div>
+          <div class="label" style="margin-top:6px">
+            <i data-lucide="bar-chart"></i> Faturamento Mensal
+            <span class="info-tooltip" data-text="A soma total de todas as notas emitidas no mês. No Lucro Presumido, isso define a base de cálculo dos impostos federais (PIS/COFINS/IRPJ/CSLL).">
+              <i data-lucide="circle-help" width="15" height="15"></i>
+            </span>
+          </div>
           <input id="faturamento_mensal" class="currency" placeholder="R$ 0,00">
         </div>
 
-        <!-- CARD DIREITA -->
         <div class="card content-right">
-          <div class="label"><i data-lucide="globe"></i> Natureza da Operação</div>
+          <div class="label">
+            <i data-lucide="globe"></i> Natureza da Operação
+            <span class="info-tooltip" data-text="Selecione 'Exportação' apenas se o serviço for prestado para o exterior. Isso geralmente isenta PIS, COFINS e ISS.">
+              <i data-lucide="circle-help" width="15" height="15"></i>
+            </span>
+          </div>
           <select id="natureza_exportacao">
             <option value="">-- selecione --</option>
             <option value="1">Operação Normal</option>
@@ -37,7 +50,12 @@
           </select>
 
           <div id="iss-container">
-            <div class="label" style="margin-top:8px"><i data-lucide="percent"></i> Alíquota do ISS</div>
+            <div class="label" style="margin-top:8px">
+              <i data-lucide="percent"></i> Alíquota do ISS
+              <span class="info-tooltip" data-text="Informe a alíquota definida pela sua prefeitura para o seu serviço (geralmente entre 2% e 5%).">
+                <i data-lucide="circle-help" width="15" height="15"></i>
+              </span>
+            </div>
             <div class="percent-wrapper">
               <input id="aliquota_iss" type="number" placeholder="2,00 a 5,00" min="2" max="5" step="0.01">
             </div>
@@ -96,7 +114,6 @@
     const naturezaSelect = document.getElementById('natureza_exportacao');
     const issContainer = document.getElementById('iss-container');
     const aliquotaIssInput = document.getElementById('aliquota_iss');
-    const inputs = [valorNF, faturamento, naturezaSelect, aliquotaIssInput];
 
     // ====== Mostrar ou ocultar campo ISS ======
     naturezaSelect.addEventListener('change', () => {
@@ -113,7 +130,7 @@
     aliquotaIssInput.addEventListener('input', () => {
       let val = parseFloat(aliquotaIssInput.value);
       if (isNaN(val)) return;
-      if (val < 2) aliquotaIssInput.value = 2.00;
+      if (val < 0) aliquotaIssInput.value = 2.00; 
       if (val > 5) aliquotaIssInput.value = 5.00;
     });
 
@@ -176,11 +193,16 @@
 
         let html = '<div class="card" style="margin-top:16px;"><strong style="color:var(--accent)">Resultado do Cálculo</strong><br><br>';
         for (const [k, v] of Object.entries(json)) {
-          html += `<div style="margin-bottom:4px;"><strong>${k}:</strong> R$ ${v.toLocaleString('pt-BR', {minimumFractionDigits:2})}</div>`;
+            let displayVal = v;
+            if (typeof v === 'number') {
+                displayVal = v.toLocaleString('pt-BR', {minimumFractionDigits:2});
+            }
+          html += `<div style="margin-bottom:6px;"><strong>${k}:</strong> R$ ${displayVal}</div>`;
         }
         html += '</div>';
         resultArea.innerHTML = html;
-        showFeedback('Simulador — Lucro Presumido');
+
+        // A linha "showFeedback" foi removida daqui
 
       } catch (err) {
         errors.textContent = 'Erro ao conectar com o servidor: ' + err.message;

@@ -2,55 +2,320 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
-  <title>Holerite - Em Desenvolvimento</title>
+  <title>Gerador de Holerite Profissional</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=3">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=11">
   <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <style>
+      /* =========================================
+         CSS ESPECÍFICO DO HOLERITE (LAYOUT PRO)
+         ========================================= */
+      
+      .split-columns {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 20px;
+          align-items: start;
+      }
+      @media (max-width: 700px) { .split-columns { grid-template-columns: 1fr; } }
+
+      .col-card {
+          background: #fff;
+          border: 1px solid #e0e0e0;
+          border-radius: 8px;
+          padding: 15px;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+      }
+
+      .item-dinamico select, 
+      .item-dinamico input {
+          width: 100%;
+          box-sizing: border-box; 
+      }
+
+      /* --- PREVIEW DO HOLERITE --- */
+      .holerite-preview {
+          background: #fff;
+          font-family: 'Courier New', Courier, monospace;
+          font-size: 12px;
+          max-width: 800px;
+          margin: 30px auto;
+          display: none;
+          color: #000;
+          border: 2px solid #000;
+          box-sizing: border-box;
+      }
+
+      .hol-content { padding: 20px; }
+
+      .hol-header {
+          border-bottom: 2px solid #000;
+          padding-bottom: 10px;
+          margin-bottom: 15px;
+      }
+      .hol-header-top { display: flex; justify-content: space-between; align-items: flex-start; }
+      .hol-header-bottom { margin-top: 10px; display: flex; justify-content: space-between; }
+
+      .hol-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 11px; }
+      .hol-table th {
+          border-top: 1px solid #000; border-bottom: 1px solid #000;
+          background-color: #f0f0f0; font-weight: bold; text-transform: uppercase;
+          padding: 5px; text-align: left;
+      }
+      .hol-table td { padding: 4px 5px; border-bottom: 1px dotted #ccc; }
+      
+      .hol-footer {
+          border-top: 2px solid #000; padding-top: 10px;
+          display: flex; justify-content: space-between; align-items: flex-start;
+      }
+      .box-bases { border: 1px solid #000; padding: 5px; font-size: 10px; width: 60%; }
+      .box-totais { width: 35%; font-size: 11px; }
+      .linha-total { display: flex; justify-content: space-between; margin-bottom: 5px; }
+      
+      .box-liquido {
+          background: #e6e6e6; border: 1px solid #000; padding: 8px; margin-top: 5px;
+          display: flex; justify-content: space-between; align-items: center; font-weight: bold;
+      }
+
+      .area-assinatura { margin-top: 40px; text-align: center; font-size: 10px; }
+      .linha-assinatura { border-top: 1px solid #000; width: 60%; margin: 0 auto 5px auto; }
+
+      .holerite-2vias-container { display: none; }
+      .cut-line { margin: 20px 0; border-top: 1px dashed #000; text-align: center; font-size: 10px; position: relative; height: 10px; }
+      .cut-line span { background: #fff; padding: 0 10px; position: relative; top: -8px; }
+
+      /* --- IMPRESSÃO --- */
+      @media print {
+          body * { visibility: hidden; }
+          header, footer, #print-controls, .action-right, .card, #input-area, .wrap > h1 { display: none !important; }
+
+          body.print-mode-padrao #holerite-area, body.print-mode-padrao #holerite-area * { visibility: visible; }
+          body.print-mode-padrao #holerite-area {
+              position: absolute; left: 0; top: 0; width: 100%; display: block !important; border: 2px solid #000; margin: 0;
+          }
+
+          body.print-mode-duplo #holerite-2vias-container, body.print-mode-duplo #holerite-2vias-container * { visibility: visible; }
+          body.print-mode-duplo #holerite-2vias-container {
+              position: absolute; left: 0; top: 0; width: 100%; display: block !important;
+          }
+          body.print-mode-duplo .holerite-preview {
+              border: 1px solid #000; margin-bottom: 20px; font-size: 10px; page-break-inside: avoid; box-shadow: none;
+          }
+      }
+  </style>
 </head>
 <body>
-  <header><h1><i data-lucide="file-text"></i> Emissão de Holerite</h1></header>
+  <header><h1><i data-lucide="file-text"></i> Gerador de Holerite</h1></header>
 
   <main>
-    <div class="wrap" style="text-align:center; padding:40px 28px;">
+    <div class="wrap">
       
-      <div class="card" style="max-width:760px; margin: 0 auto; padding:32px;">
-        <div style="display:flex; align-items:center; gap:12px; justify-content:center; margin-bottom:12px;">
-          <i data-lucide="activity" style="width:36px; height:36px; color:var(--accent);"></i>
-          <div style="font-size:18px; font-weight:700; color:var(--primary);">
-            Gerador de Holerite
+      <div id="input-area">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px">
+            <strong style="color:var(--accent); font-size:1.2em;">Dados para Emissão</strong>
+            <span style="font-size:12px;color:#666">Preencha os dados abaixo</span>
           </div>
-        </div>
 
-        <div style="color:#444; margin:12px 0 20px; font-size:15px;">
-          Estamos finalizando esta funcionalidade. Em breve você poderá gerar o demonstrativo (holerite) com os valores detalhados, exportar em PDF e imprimir.
-        </div>
-
-        <div style="margin-top:8px; margin-bottom:18px;">
-          <div style="background:#fff; border:1px dashed #E4E6F0; padding:18px; border-radius:8px; color:#666;">
-            <strong>O que virá aqui:</strong>
-            <ul style="text-align:left; margin:8px 0 0 18px; padding:0; color:#555;">
-              <li>Montagem automática do holerite com proventos e descontos</li>
-              <li>Opção para detalhar lançamentos (horas extras, adicionais, comissões)</li>
-              <li>Download em PDF com layout formal de holerite</li>
-              <li>Histórico e filtros por período</li>
-            </ul>
+          <div class="card">
+             <div class="grid-2-cols" style="margin-bottom:15px;">
+                <div style="flex: 2;"> <div class="label">Nome da Empresa</div>
+                    <input id="empresa_nome" type="text" value="EMPRESA MODELO LTDA" style="width:100%">
+                </div>
+                <div style="flex: 1;"> <div class="label">CNPJ</div>
+                    <input id="empresa_cnpj" type="text" value="12.345.678/0001-99" placeholder="00.000.000/0000-00" style="width:100%">
+                </div>
+             </div>
+             
+             <div class="grid-2-cols" style="margin-bottom:15px;">
+                <div style="flex: 2;">
+                    <div class="label">Nome do Funcionário</div>
+                    <input id="func_nome" type="text" value="FUNCIONÁRIO MODELO" style="width:100%">
+                </div>
+                <div style="flex: 1;">
+                    <div class="label">Cargo</div>
+                    <input id="cargo_nome" type="text" value="ASSISTENTE ADM" style="width:100%">
+                </div>
+             </div>
+             
+             <div class="grid-3-cols">
+                <div>
+                    <div class="label">
+                        Salário Base (R$)
+                        <span class="info-tooltip" data-text="Salário bruto registrado em carteira.">
+                            <i data-lucide="circle-help" width="14"></i>
+                        </span>
+                    </div>
+                    <div class="currency-wrapper">
+                        <input id="salario_base" class="currency-input currency" placeholder="R$ 0,00">
+                    </div>
+                </div>
+                <div>
+                    <div class="label">Dependentes (IR)</div>
+                    <input id="dependentes" type="number" min="0" value="0">
+                </div>
+                <div>
+                    <div class="label">Referência</div>
+                    <input id="referencia" type="month" value="2025-01">
+                </div>
+             </div>
           </div>
-        </div>
 
-        <div style="display:flex; gap:12px; justify-content:center; margin-top:18px;">
-          <button onclick="history.back()" style="background:#f4f5fb; color:var(--primary); border:1px solid #dde2f6; padding:10px 18px; border-radius:8px; cursor:pointer;">
-            <i data-lucide="arrow-left"></i> Voltar
-          </button>
-          <button disabled style="opacity:0.85;">
-            <i data-lucide="clock"></i> Em desenvolvimento
-          </button>
-        </div>
+          <div class="split-columns" style="margin-top:20px;">
+              
+              <div class="col-card" style="border-top: 4px solid #2ecc71;">
+                <div class="label" style="color:#27ae60; font-size:1.1em; margin-bottom:15px; display:flex; align-items:center; gap:6px;">
+                    <i data-lucide="trending-up" width="18"></i> Proventos (Ganhos)
+                    <span class="info-tooltip" data-text="Adicione Hora Extra, Comissão ou Benefícios Legais.">
+                        <i data-lucide="circle-help" width="14"></i>
+                    </span>
+                </div>
+                
+                <div id="proventos_area"></div>
+                
+                <button onclick="adicionarItem('proventos_area', 'P')" style="margin-top:15px; padding:10px; font-size:13px; color:#27ae60; border:1px dashed #27ae60; background:#f0fbf4; width:100%; border-radius:6px; cursor:pointer; font-weight:600;">
+                    + Adicionar Provento
+                </button>
+              </div>
 
-        <div class="hint" style="margin-top:14px;">Enquanto isso, você pode usar o simulador de rescisão para visualizar as verbas e gerar relatórios.</div>
+              <div class="col-card" style="border-top: 4px solid #e74c3c;">
+                <div class="label" style="color:#c0392b; font-size:1.1em; margin-bottom:15px; display:flex; align-items:center; gap:6px;">
+                    <i data-lucide="trending-down" width="18"></i> Descontos Extras
+                    <span class="info-tooltip" data-text="INSS e IRRF são calculados automaticamente. Adicione outros descontos aqui.">
+                        <i data-lucide="circle-help" width="14"></i>
+                    </span>
+                </div>
+                
+                <div id="descontos_area"></div>
+                
+                <button onclick="adicionarItem('descontos_area', 'D')" style="margin-top:15px; padding:10px; font-size:13px; color:#c0392b; border:1px dashed #c0392b; background:#fdf2f2; width:100%; border-radius:6px; cursor:pointer; font-weight:600;">
+                    + Adicionar Desconto
+                </button>
+              </div>
+          </div>
+
+          <div class="action-right" style="margin-top:30px;">
+            <button id="btnCalcular" onclick="calcularHolerite()" style="padding: 14px 40px; font-size: 16px; background:var(--accent); color:#fff; border:none; border-radius:8px; cursor:pointer; font-weight:bold; box-shadow:0 4px 12px rgba(46, 91, 255, 0.3);">
+                <i data-lucide="calculator"></i> Gerar Holerite
+            </button>
+          </div>
+      </div>
+
+      <div id="holerite-area" class="holerite-preview"></div>
+      
+      <div id="holerite-2vias-container" class="holerite-2vias-container">
+          <div id="via-empresa" class="holerite-preview" style="display:block;"></div>
+          <div class="cut-line"><span>--- CORTE AQUI ---</span></div>
+          <div id="via-funcionario" class="holerite-preview" style="display:block;"></div>
+      </div>
+
+      <div id="print-controls" style="display:none; text-align:center; margin-top:25px; padding-bottom:30px; background:#fff; padding:20px; border-radius:10px; border:1px solid #eee;">
+          <p style="font-size:14px; color:#444; margin-bottom:15px; font-weight:bold;">Documento gerado com sucesso!</p>
+          
+          <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+              <button onclick="voltarEdicao()" style="background:#f39c12; color:white; border:none; padding:12px 20px; border-radius:6px; cursor:pointer; font-weight:bold; display:flex; align-items:center; gap:8px;">
+                  <i data-lucide="edit"></i> Editar Dados
+              </button>
+
+              <button onclick="imprimir(1)" style="background:#3498db; color:white; border:none; padding:12px 20px; border-radius:6px; cursor:pointer; font-weight:bold; display:flex; align-items:center; gap:8px;">
+                  <i data-lucide="file"></i> Imprimir 1 Via
+              </button>
+              
+              <button onclick="imprimir(2)" style="background:#27ae60; color:white; border:none; padding:12px 20px; border-radius:6px; cursor:pointer; font-weight:bold; display:flex; align-items:center; gap:8px;">
+                  <i data-lucide="copy"></i> Imprimir 2 Vias
+              </button>
+          </div>
       </div>
 
     </div>
   </main>
+  
+  <script type="text/template" id="template-holerite">
+     <div class="hol-content">
+         <div class="hol-header">
+             <div class="hol-header-top">
+                <div>
+                    <strong style="font-size:1.3em;">{EMPRESA}</strong><br>
+                    <span style="font-size:11px;">CNPJ: {CNPJ}</span>
+                </div>
+                <div style="text-align:right;">
+                    <strong style="font-size:1.1em;">RECIBO DE PAGAMENTO</strong><br>
+                    <span style="font-size:11px;">Referência: <strong>{REF}</strong></span>
+                </div>
+             </div>
+             
+             <div class="hol-header-bottom">
+                 <div style="width: 60%;">
+                     <span style="font-size:10px; color:#666;">FUNCIONÁRIO</span><br>
+                     <strong>{FUNCIONARIO}</strong>
+                 </div>
+                 <div style="width: 40%; text-align:right;">
+                     <span style="font-size:10px; color:#666;">CARGO</span><br>
+                     <strong>{CARGO}</strong>
+                 </div>
+             </div>
+         </div>
+
+         <table class="hol-table">
+             <thead>
+                 <tr>
+                     <th style="width:50px;">CÓD</th>
+                     <th>DESCRIÇÃO</th>
+                     <th style="width:60px; text-align:center;">REF</th>
+                     <th style="width:100px; text-align:right;">VENCIMENTOS</th>
+                     <th style="width:100px; text-align:right;">DESCONTOS</th>
+                 </tr>
+             </thead>
+             <tbody>
+                 {LINHAS_TABELA}
+             </tbody>
+         </table>
+
+         <div class="hol-footer">
+             <div style="width: 58%;">
+                <div class="box-bases">
+                    <div style="margin-bottom:4px; font-weight:bold; border-bottom:1px solid #ccc;">BASES DE CÁLCULO</div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+                        <span>Sal. Base:</span> <span>{BASE_SAL}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+                        <span>Base INSS:</span> <span>{BASE_INSS}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+                        <span>Base FGTS:</span> <span>{BASE_FGTS}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span>FGTS do Mês:</span> <strong>{VAL_FGTS}</strong>
+                    </div>
+                </div>
+                <div style="margin-top:10px; font-size:9px; color:#666;">
+                    Declaro ter recebido a importância líquida discriminada neste recibo.
+                </div>
+             </div>
+             
+             <div class="box-totais">
+                 <div class="linha-total">
+                     <span>Total Vencimentos:</span>
+                     <span>{TOT_VENC}</span>
+                 </div>
+                 <div class="linha-total">
+                     <span>Total Descontos:</span>
+                     <span>{TOT_DESC}</span>
+                 </div>
+                 <div class="box-liquido">
+                     <span style="font-size:10px;">LÍQUIDO A RECEBER</span>
+                     <span style="font-size:1.4em;">{TOT_LIQ}</span>
+                 </div>
+             </div>
+         </div>
+         
+         <div class="area-assinatura">
+             <div class="linha-assinatura"></div>
+             ASSINATURA DO FUNCIONÁRIO
+             <div style="margin-top:5px; font-size:9px;">{DATA_HOJE}</div>
+         </div>
+     </div>
+  </script>
 
   <footer>
     <div class="footer-left">
@@ -69,9 +334,191 @@
     </div>
   </footer>
 
+  <script>
+    lucide.createIcons();
 
-<script>
-  lucide.createIcons();
-</script>
+    // === CATÁLOGOS BASEADOS NA LEGISLAÇÃO (CLT/CF) ===
+    const CATALOGO_PROVENTOS = [
+        { label: "Hora Extra 50% (Art. 7º CF/88)", value: "HORA EXTRA 50%" },
+        { label: "Hora Extra 100% (Domingos/Feriados)", value: "HORA EXTRA 100%" },
+        { label: "Adicional Noturno 20% (Art. 73 CLT)", value: "ADICIONAL NOTURNO 20%" },
+        { label: "Adic. Periculosidade 30% (Art. 193 CLT)", value: "ADIC. PERICULOSIDADE 30%" },
+        { label: "Adic. Insalubridade 20% (Art. 192 CLT)", value: "ADIC. INSALUBRIDADE 20%" },
+        { label: "Adic. Insalubridade 40% (Art. 192 CLT)", value: "ADIC. INSALUBRIDADE 40%" },
+        { label: "DSR sobre Variáveis (Lei 605/49)", value: "DSR S/ VARIAVEIS" },
+        { label: "Salário Família (Lei 4.266/63)", value: "SALARIO FAMILIA" },
+        { label: "Gratificação de Função (Art. 62 CLT)", value: "GRAT. DE FUNCAO" },
+        { label: "Comissões (Art. 457 CLT)", value: "COMISSOES" },
+        { label: "Adicional de Transferência 25%", value: "ADIC. TRANSFERENCIA" },
+        { label: "Adicional de Sobreaviso (1/3)", value: "ADIC. SOBREAVISO" }
+    ];
+
+    const CATALOGO_DESCONTOS = [
+        { label: "Vale Transporte 6% (Lei 7.418/85)", value: "VALE TRANSPORTE" },
+        { label: "Faltas Injustificadas", value: "FALTAS INJUSTIFICADAS" },
+        { label: "Desc. DSR s/ Faltas (Lei 605/49)", value: "DESC. DSR S/ FALTAS" },
+        { label: "Adiantamento Salarial (Vale)", value: "ADIANTAMENTO SALARIAL" },
+        { label: "Assist. Médica (Coparticipação)", value: "DESC. ASSIST. MEDICA" },
+        { label: "Vale Alimentação (Coparticipação)", value: "DESC. VALE ALIMENTACAO" },
+        { label: "Contribuição Sindical", value: "CONTRIB. SINDICAL" },
+        { label: "Pensão Alimentícia (Judicial)", value: "PENSAO ALIMENTICIA" },
+        { label: "Empréstimo Consignado", value: "EMPRESTIMO CONSIGNADO" }
+    ];
+
+    // === MÁSCARA MOEDA ===
+    function attachCurrencyBehaviorSmart(inp) {
+        inp.addEventListener('input', () => {
+            let val = inp.value.replace(/[^\d]/g, ''); 
+            if (val === '') { inp.dataset.value = ''; inp.value = ''; return; }
+            let num = parseFloat(val) / 100; 
+            inp.dataset.value = num;
+            inp.value = num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        });
+        inp.getNumericValue = () => inp.dataset.value ? parseFloat(inp.dataset.value) : null;
+        inp.setNumericValue = (val) => {
+            inp.dataset.value = val;
+            inp.value = val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+    }
+    attachCurrencyBehaviorSmart(document.getElementById('salario_base'));
+
+    // === ADICIONAR ITEM ===
+    function adicionarItem(areaId, tipo) {
+        const id = Date.now();
+        const lista = tipo === 'P' ? CATALOGO_PROVENTOS : CATALOGO_DESCONTOS;
+        
+        let opts = `<option value="">-- Selecione --</option>`;
+        lista.forEach(i => opts += `<option value="${i.value}">${i.label}</option>`);
+        
+        const html = `
+          <div class="item-dinamico" id="item_${id}" style="margin-top:10px; padding:10px; background:#f9f9f9; border:1px solid #eee; border-radius:6px;">
+             <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                <label style="font-size:11px; font-weight:bold; color:#555;">Descrição</label>
+                <button onclick="document.getElementById('item_${id}').remove()" style="border:none; background:transparent; color:#999; cursor:pointer;" title="Remover">
+                    <i data-lucide="trash-2" width="14"></i>
+                </button>
+             </div>
+             <select class="desc" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px; margin-bottom:8px; background:#fff;">${opts}</select>
+             
+             <div style="display:flex; align-items:center; gap:8px;">
+                 <div style="flex:1">
+                     <label style="font-size:11px; font-weight:bold; color:#555;">Valor (R$)</label>
+                     <div class="currency-wrapper">
+                        <input class="val currency-input currency" placeholder="0,00" style="width:100%; padding:8px 8px 8px 30px; border:1px solid #ddd; border-radius:4px;">
+                     </div>
+                 </div>
+             </div>
+          </div>`;
+        
+        document.getElementById(areaId).insertAdjacentHTML('beforeend', html);
+        const novo = document.getElementById(`item_${id}`);
+        attachCurrencyBehaviorSmart(novo.querySelector('.val'));
+        lucide.createIcons();
+    }
+
+    // === CALCULAR ===
+    async function calcularHolerite() {
+        const salario = document.getElementById('salario_base').getNumericValue();
+        if(!salario) { alert("Informe o salário base."); return; }
+        
+        const proventos = [];
+        document.querySelectorAll('#proventos_area .item-dinamico').forEach(d => {
+            const sel = d.querySelector('.desc');
+            const val = d.querySelector('.val').getNumericValue();
+            if(sel.value && val) proventos.push({descricao: sel.value, valor: val});
+        });
+        
+        const descontos = [];
+        document.querySelectorAll('#descontos_area .item-dinamico').forEach(d => {
+            const sel = d.querySelector('.desc');
+            const val = d.querySelector('.val').getNumericValue();
+            if(sel.value && val) descontos.push({descricao: sel.value, valor: val});
+        });
+
+        const payload = {
+            salario_base: salario,
+            dependentes: document.getElementById('dependentes').value,
+            outros_proventos: proventos,
+            outros_descontos: descontos
+        };
+
+        try {
+            const resp = await fetch('/calcular_holerite', {
+                method: 'POST', body: JSON.stringify(payload), headers: {'Content-Type': 'application/json'}
+            });
+            const dados = await resp.json();
+            if(dados.erro) { alert("Erro: " + dados.erro); return; }
+            
+            const htmlFinal = gerarHtmlHolerite(dados);
+            
+            // 1 Via
+            document.getElementById('holerite-area').innerHTML = htmlFinal;
+            // 2 Vias
+            document.getElementById('via-empresa').innerHTML = htmlFinal.replace("RECIBO DE PAGAMENTO", "RECIBO DE PAGAMENTO (VIA EMPRESA)");
+            document.getElementById('via-funcionario').innerHTML = htmlFinal.replace("RECIBO DE PAGAMENTO", "RECIBO DE PAGAMENTO (VIA FUNCIONÁRIO)");
+
+            document.getElementById('input-area').style.display = 'none';
+            document.getElementById('holerite-area').style.display = 'block';
+            document.getElementById('print-controls').style.display = 'block';
+            window.scrollTo(0,0);
+            
+        } catch (e) {
+            alert("Erro de conexão: " + e.message);
+        }
+    }
+
+    function gerarHtmlHolerite(dados) {
+        let tpl = document.getElementById('template-holerite').innerHTML;
+        const fmt = (v) => v.toLocaleString('pt-BR', {minimumFractionDigits:2});
+        
+        tpl = tpl.replace('{EMPRESA}', document.getElementById('empresa_nome').value.toUpperCase());
+        tpl = tpl.replace('{CNPJ}', document.getElementById('empresa_cnpj').value);
+        tpl = tpl.replace('{FUNCIONARIO}', document.getElementById('func_nome').value.toUpperCase());
+        tpl = tpl.replace('{CARGO}', document.getElementById('cargo_nome').value.toUpperCase());
+        
+        const refParts = document.getElementById('referencia').value.split('-');
+        tpl = tpl.replace('{REF}', `${refParts[1]}/${refParts[0]}`);
+        tpl = tpl.replace('{DATA_HOJE}', new Date().toLocaleDateString('pt-BR'));
+
+        let linhas = '';
+        dados.itens.forEach(item => {
+            const isVenc = item.tipo === 'V';
+            linhas += `
+                <tr>
+                    <td>${item.cod}</td>
+                    <td>${item.desc}</td>
+                    <td style="text-align:center;">${item.ref || ''}</td>
+                    <td style="text-align:right;">${isVenc ? fmt(item.valor) : ''}</td>
+                    <td style="text-align:right;">${!isVenc ? fmt(item.valor) : ''}</td>
+                </tr>`;
+        });
+        tpl = tpl.replace('{LINHAS_TABELA}', linhas);
+
+        tpl = tpl.replace('{TOT_VENC}', fmt(dados.totais.vencimentos));
+        tpl = tpl.replace('{TOT_DESC}', fmt(dados.totais.descontos));
+        tpl = tpl.replace('{TOT_LIQ}', fmt(dados.totais.liquido));
+        
+        tpl = tpl.replace('{BASE_SAL}', fmt(document.getElementById('salario_base').getNumericValue()));
+        tpl = tpl.replace('{BASE_INSS}', fmt(dados.totais.bases.inss));
+        tpl = tpl.replace('{BASE_FGTS}', fmt(dados.totais.bases.fgts));
+        tpl = tpl.replace('{VAL_FGTS}', fmt(dados.totais.bases.fgts_valor));
+
+        return tpl;
+    }
+
+    function voltarEdicao() {
+        document.getElementById('input-area').style.display = 'block';
+        document.getElementById('holerite-area').style.display = 'none';
+        document.getElementById('print-controls').style.display = 'none';
+    }
+
+    function imprimir(modo) {
+        document.body.className = '';
+        if(modo === 1) document.body.classList.add('print-mode-padrao');
+        else document.body.classList.add('print-mode-duplo');
+        window.print();
+        setTimeout(() => document.body.className = '', 1000);
+    }
+  </script>
 </body>
 </html>
