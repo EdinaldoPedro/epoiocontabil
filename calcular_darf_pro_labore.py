@@ -1,20 +1,58 @@
 import json
 
-# --- Constantes de cálculo ---
+# ==============================================================================
+#  CONSTANTES ATUALIZADAS 2026
+# ==============================================================================
+
+# Tabela progressiva IRRF 2026 (Vigência Jan/2026)
 TABELA_IRPF = [
-    (2259.20, 0.0, 0.0),
-    (2826.65, 0.075, 169.44),
-    (3751.05, 0.15, 381.44),
-    (4664.68, 0.225, 662.77),
-    (float('inf'), 0.275, 896.00),
+    (2428.80, 0.0, 0.0),
+    (2826.65, 0.075, 182.16),
+    (3751.05, 0.15, 394.16),
+    (4664.68, 0.225, 675.49),
+    (float('inf'), 0.275, 908.73),
 ]
 
+PISO_PRO_LABORE = 1621.00   # Salário Mínimo 2026
+PERCENTUAL_FATOR_R = 0.28   # Meta de 28% do faturamento
 
-PISO_PRO_LABORE = 1518.00
-PERCENTUAL_FATOR_R = 0.28
+# INSS Contribuinte Individual (Sócio) geralmente é 11%
 ALIQUOTA_INSS = 0.11
-TETO_INSS = 8157.41
+TETO_INSS = 8475.55         # Teto INSS 2026
 INSS_MAXIMO = TETO_INSS * ALIQUOTA_INSS
+
+
+def calcular_irrf_2026(base_calculo, rendimento_bruto):
+    """
+    Calcula o IRRF com as regras de 2026:
+    - Tabela progressiva atualizada.
+    - Isenção para quem ganha até R$ 5.000,00 (bruto).
+    - Redutor gradual para quem ganha até R$ 7.350,00 (bruto).
+    """
+    # 1. Cálculo padrão pela tabela (sobre a base líquida)
+    darf_irpf = 0.0
+    for limite, aliquota, deducao in TABELA_IRPF:
+        if base_calculo <= limite:
+            darf_irpf = (base_calculo * aliquota) - deducao
+            break
+    
+    darf_irpf = max(0.0, darf_irpf)
+
+    # 2. Aplicação do Redutor Especial (Baseado no Bruto)
+    redutor = 0.0
+    
+    if rendimento_bruto <= 5000.00:
+        # Isenção total para brutos até 5k
+        redutor = darf_irpf
+    elif rendimento_bruto <= 7350.00:
+        # Redutor gradual para brutos até 7.35k
+        # Fórmula: R$ 978,62 - (0,133145 * Rendimento Bruto)
+        val_redutor = 978.62 - (0.133145 * rendimento_bruto)
+        redutor = max(0.0, val_redutor)
+        redutor = min(redutor, darf_irpf) # Não pode deduzir mais que o próprio imposto
+    
+    imposto_final = max(0.0, darf_irpf - redutor)
+    return round(imposto_final, 2)
 
 
 def calcular_darf_pro_labore(dados_json: dict):
@@ -33,22 +71,24 @@ def calcular_darf_pro_labore(dados_json: dict):
         raise ValueError("Campo 'faturamento' deve ser maior que zero.")
 
     # --- Cálculos ---
+    
+    # 1. Definição do valor do Pró-labore
+    # Busca atingir 28% do faturamento (para Fator R), respeitando o piso
     pro_labore_calculado = faturamento_mensal * PERCENTUAL_FATOR_R
     pro_labore = max(pro_labore_calculado, PISO_PRO_LABORE)
 
+    # 2. INSS (11% limitado ao teto)
     inss_descontado = min(pro_labore * ALIQUOTA_INSS, INSS_MAXIMO)
+    
+    # 3. Base para IR (Pró-labore - INSS)
     base_calculo_irpf = pro_labore - inss_descontado
 
-    darf_irpf = 0.0
-    for limite, aliquota, deducao in TABELA_IRPF:
-        if base_calculo_irpf <= limite:
-            darf_irpf = (base_calculo_irpf * aliquota) - deducao
-            break
-    darf_irpf = max(0.0, darf_irpf)
+    # 4. Cálculo do IRRF (Regras 2026)
+    darf_irpf = calcular_irrf_2026(base_calculo_irpf, pro_labore)
 
     total_a_recolher = inss_descontado + darf_irpf
 
-    # Resultado (dupla representação para segurança)
+    # Resultado (dupla representação para segurança e compatibilidade com front)
     resultado = {
         # chaves curtas (recomendadas pro front)
         "pro_labore": round(pro_labore, 2),
